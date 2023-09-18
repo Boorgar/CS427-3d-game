@@ -7,9 +7,7 @@ public class ShellExplosion : NetworkBehaviour
     public GameObject m_particlesPrefab;
 
     private GameObject explosion;
-    private ParticleSystem m_ExplosionParticles;       
-    private AudioSource m_ExplosionAudio;              
-    
+              
     public float m_MaxDamage = 100f;                  
     public float m_ExplosionForce = 1000f;            
     public float m_MaxLifeTime = 2f;                  
@@ -21,22 +19,9 @@ public class ShellExplosion : NetworkBehaviour
         Destroy(gameObject, m_MaxLifeTime);
     }
 
-    [ServerRpc]
-    private void explodeServerRpc()
-    {
-        explosion = Instantiate(m_particlesPrefab, transform.position, Quaternion.Euler(-90, 0, 0));
-        explosion.GetComponent<NetworkObject>().Spawn();
-        m_ExplosionParticles = explosion.GetComponent<ParticleSystem>();
-        m_ExplosionAudio = explosion.GetComponent<AudioSource>();
-        explode_ClientRpc();
-    }
-
     [ClientRpc]
     private void explode_ClientRpc()
     {
-        m_ExplosionParticles.Play();
-        m_ExplosionAudio.Play();
-        Destroy(explosion, m_ExplosionParticles.main.duration);
         Destroy(gameObject);
     }
 
@@ -59,14 +44,8 @@ public class ShellExplosion : NetworkBehaviour
             targetHealth.TakeDamage(damage);
         }
         explosion = Instantiate(m_particlesPrefab, transform.position, Quaternion.Euler(-90, 0, 0));
-        //explosion.GetComponent<NetworkObject>().Spawn();
-        m_ExplosionParticles = explosion.GetComponent<ParticleSystem>();
-        m_ExplosionAudio = explosion.GetComponent<AudioSource>();
-        m_ExplosionParticles.Play();
-        m_ExplosionAudio.Play();
-        Destroy(explosion, m_ExplosionParticles.main.duration);
-        Destroy(gameObject);
-
+        explosion.GetComponent<NetworkObject>().Spawn();
+        explode_ClientRpc();
     }
 
 
