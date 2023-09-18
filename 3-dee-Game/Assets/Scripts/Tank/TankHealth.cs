@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using Unity.Netcode;
+using UnityEngine;
 using UnityEngine.UI;
 
-public class TankHealth : MonoBehaviour
+public class TankHealth : NetworkBehaviour
 {
     public float m_StartingHealth = 100f;          
     public Slider m_Slider;                        

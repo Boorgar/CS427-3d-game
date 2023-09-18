@@ -1,10 +1,15 @@
-﻿using UnityEngine;
+﻿using Unity.Netcode;
+using UnityEngine;
 
-public class ShellExplosion : MonoBehaviour
+public class ShellExplosion : NetworkBehaviour
 {
     public LayerMask m_TankMask;
-    public ParticleSystem m_ExplosionParticles;       
-    public AudioSource m_ExplosionAudio;              
+    public GameObject m_particlesPrefab;
+
+    private GameObject explosion;
+    private ParticleSystem m_ExplosionParticles;       
+    private AudioSource m_ExplosionAudio;              
+    
     public float m_MaxDamage = 100f;                  
     public float m_ExplosionForce = 1000f;            
     public float m_MaxLifeTime = 2f;                  
@@ -16,6 +21,24 @@ public class ShellExplosion : MonoBehaviour
         Destroy(gameObject, m_MaxLifeTime);
     }
 
+    [ServerRpc]
+    private void explodeServerRpc()
+    {
+        explosion = Instantiate(m_particlesPrefab, transform.position, Quaternion.Euler(-90, 0, 0));
+        explosion.GetComponent<NetworkObject>().Spawn();
+        m_ExplosionParticles = explosion.GetComponent<ParticleSystem>();
+        m_ExplosionAudio = explosion.GetComponent<AudioSource>();
+        explode_ClientRpc();
+    }
+
+    [ClientRpc]
+    private void explode_ClientRpc()
+    {
+        m_ExplosionParticles.Play();
+        m_ExplosionAudio.Play();
+        Destroy(explosion, m_ExplosionParticles.main.duration);
+        Destroy(gameObject);
+    }
 
     private void OnTriggerEnter(Collider other)
     {
@@ -35,13 +58,15 @@ public class ShellExplosion : MonoBehaviour
             float damage = CalculateDamage(target.position);
             targetHealth.TakeDamage(damage);
         }
-
-        m_ExplosionParticles.transform.parent = null;
+        explosion = Instantiate(m_particlesPrefab, transform.position, Quaternion.Euler(-90, 0, 0));
+        //explosion.GetComponent<NetworkObject>().Spawn();
+        m_ExplosionParticles = explosion.GetComponent<ParticleSystem>();
+        m_ExplosionAudio = explosion.GetComponent<AudioSource>();
         m_ExplosionParticles.Play();
         m_ExplosionAudio.Play();
-        Destroy(m_ExplosionParticles.gameObject, m_ExplosionParticles.main.duration);
-        
+        Destroy(explosion, m_ExplosionParticles.main.duration);
         Destroy(gameObject);
+
     }
 
 

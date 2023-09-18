@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using Unity.Netcode;
+using UnityEngine;
 using UnityEngine.UI;
 
-public class TankShooting : MonoBehaviour
+public class TankShooting : NetworkBehaviour
 {
     public int m_PlayerNumber = 1;       
     public Rigidbody m_Shell;            
@@ -37,11 +38,12 @@ public class TankShooting : MonoBehaviour
     private void Update()
     {
         // Track the current state of the fire button and make decisions based on the current launch force.
+        if (!IsOwner) return;
         m_AimSlider.value = m_MinLaunchForce;
         if(m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
         {
             m_CurrentLaunchForce = m_MaxLaunchForce;
-            Fire() ;
+            FireServerRpc();
         }
         else if(Input.GetButtonDown(m_FireButton))
         {
@@ -57,16 +59,17 @@ public class TankShooting : MonoBehaviour
         }
         else if (Input.GetButtonUp(m_FireButton) && !m_Fired)
         {
-            Fire();
+            FireServerRpc();
         }
     }
 
-
-    private void Fire()
+    [ServerRpc]
+    private void FireServerRpc()
     {
         // Instantiate and launch the shell.
         m_Fired = true;
         Rigidbody shellInstance = Instantiate(m_Shell, m_FireTransform.position, m_FireTransform.rotation) as Rigidbody;
+        shellInstance.GetComponent<NetworkObject>().Spawn();
         shellInstance.velocity = m_CurrentLaunchForce * m_FireTransform.forward;
         m_ShootingAudio.clip = m_FireClip;
         m_ShootingAudio.Play();
