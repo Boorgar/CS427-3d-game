@@ -11,26 +11,34 @@ public class ShellExplosion : NetworkBehaviour
     public float m_MaxDamage = 100f;                  
     public float m_ExplosionForce = 1000f;            
     public float m_MaxLifeTime = 2f;                  
-    public float m_ExplosionRadius = 5f;              
+    public float m_ExplosionRadius = 5f;
 
 
-    private void Start()
+    public override void OnNetworkSpawn()
     {
         Destroy(gameObject, m_MaxLifeTime);
     }
 
-    [ClientRpc]
-    private void explode_ClientRpc()
-    {
-        Destroy(gameObject);
-    }
-
     private void OnTriggerEnter(Collider other)
     {
+        if(!IsOwnedByServer) return;
         // Find all the tanks in an area around the shell and damage them.
+        spawnExplosion_ServerRpc();
+        //checkup_ClientRpc();
+    }
+    [ServerRpc(RequireOwnership =false)]
+    private void spawnExplosion_ServerRpc()
+    {
+        explosion = Instantiate(m_particlesPrefab, transform.position, Quaternion.Euler(-90, 0, 0));
+        explosion.GetComponent<NetworkObject>().Spawn();
+        Destroy(gameObject);
+    }
+    [ClientRpc]
+    private void checkup_ClientRpc()
+    {
         Collider[] colliders = Physics.OverlapSphere(transform.position, m_ExplosionRadius, m_TankMask);
 
-        for(int i=0; i<colliders.Length; i++)
+        for (int i = 0; i < colliders.Length; i++)
         {
             Rigidbody target = colliders[i].GetComponent<Rigidbody>();
             if (!target)
@@ -43,12 +51,7 @@ public class ShellExplosion : NetworkBehaviour
             float damage = CalculateDamage(target.position);
             targetHealth.TakeDamage(damage);
         }
-        explosion = Instantiate(m_particlesPrefab, transform.position, Quaternion.Euler(-90, 0, 0));
-        explosion.GetComponent<NetworkObject>().Spawn();
-        explode_ClientRpc();
     }
-
-
     private float CalculateDamage(Vector3 targetPosition)
     {
         // Calculate the amount of damage a target should take based on it's position.
