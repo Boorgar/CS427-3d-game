@@ -7,6 +7,7 @@ Group Members:
 
 # Description
 A 3D Unity game made for our final project submission in CS427 at HCMUS. This game is a Unity 3D Shooter game with Multiplayer mode using Mirror. There are two modes: Team Deathmatch and Capture the Flags. Both can be enjoyed with friends or play in matches with bots. 
+Availabe for PC, Android
 
 # Unity version
 2022.3.1f1
