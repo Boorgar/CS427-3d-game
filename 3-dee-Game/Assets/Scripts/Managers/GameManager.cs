@@ -54,7 +54,7 @@ public class GameManager : MonoBehaviour
             targets[i] = m_Tanks[i].m_Instance.transform;
         }
 
-        m_CameraControl.m_Targets = targets;
+        //m_CameraControl.m_Targets = targets;
     }
 
 

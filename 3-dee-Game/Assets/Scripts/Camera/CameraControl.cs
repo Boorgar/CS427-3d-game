@@ -1,60 +1,66 @@
-﻿using UnityEngine;
+﻿using Unity.Netcode;
+using UnityEngine;
 
-public class CameraControl : MonoBehaviour
+public class CameraControl : NetworkBehaviour
 {
     public float m_DampTime = 0.2f;                 
     public float m_ScreenEdgeBuffer = 4f;           
     public float m_MinSize = 6.5f;
-    [HideInInspector] public Transform[] m_Targets; 
+    public Transform m_Targets;
 
     private Camera m_Camera;                        
     private float m_ZoomSpeed;                      
     private Vector3 m_MoveVelocity;                 
-    private Vector3 m_DesiredPosition;              
+    private Vector3 m_DesiredPosition;
 
 
-    private void Awake()
+    public override void OnNetworkSpawn()
     {
+        if(!IsOwner) 
+            gameObject.SetActive(false);
         m_Camera = GetComponentInChildren<Camera>();
+        m_Camera.orthographicSize = m_MinSize;
     }
 
 
     private void FixedUpdate()
     {
         Move();
-        Zoom();
     }
-
+    private void LateUpdate()
+    {
+        transform.rotation = Quaternion.Euler(40, 60, 0);
+    }
 
     private void Move()
     {
-        FindAveragePosition();
+        //FindAveragePosition();
 
-        transform.position = Vector3.SmoothDamp(transform.position, m_DesiredPosition, ref m_MoveVelocity, m_DampTime);
+        transform.position = Vector3.SmoothDamp(transform.position, m_Targets.position, ref m_MoveVelocity, m_DampTime);
     }
 
 
-    private void FindAveragePosition()
-    {
-        Vector3 averagePos = new Vector3();
-        int numTargets = 0;
+    //private void FindAveragePosition()
+    //{
+    //    Vector3 averagePos = new Vector3();
+    //    int numTargets = 0;
 
-        for (int i = 0; i < m_Targets.Length; i++)
-        {
-            if (!m_Targets[i].gameObject.activeSelf)
-                continue;
+    //    for (int i = 0; i < m_Targets.Length; i++)
+    //    {
+    //        if (!m_Targets[i].gameObject.activeSelf)
+    //            continue;
 
-            averagePos += m_Targets[i].position;
-            numTargets++;
-        }
+    //        averagePos += m_Targets[i].position;
+    //        numTargets++;
+    //    }
 
-        if (numTargets > 0)
-            averagePos /= numTargets;
+    //    if (numTargets > 0)
+    //        averagePos /= numTargets;
 
-        averagePos.y = transform.position.y;
+    //    averagePos.y = transform.position.y;
 
-        m_DesiredPosition = averagePos;
-    }
+    //    m_DesiredPosition = averagePos;
+    //}
 
 
     private void Zoom()
@@ -70,19 +76,19 @@ public class CameraControl : MonoBehaviour
 
         float size = 0f;
 
-        for (int i = 0; i < m_Targets.Length; i++)
-        {
-            if (!m_Targets[i].gameObject.activeSelf)
-                continue;
+        //for (int i = 0; i < m_Targets.Length; i++)
+        //{
+        //    if (!m_Targets[i].gameObject.activeSelf)
+        //        continue;
 
-            Vector3 targetLocalPos = transform.InverseTransformPoint(m_Targets[i].position);
+            Vector3 targetLocalPos = transform.InverseTransformPoint(m_Targets.position);
 
             Vector3 desiredPosToTarget = targetLocalPos - desiredLocalPos;
 
             size = Mathf.Max (size, Mathf.Abs (desiredPosToTarget.y));
 
             size = Mathf.Max (size, Mathf.Abs (desiredPosToTarget.x) / m_Camera.aspect);
-        }
+        //}
         
         size += m_ScreenEdgeBuffer;
 
@@ -94,9 +100,9 @@ public class CameraControl : MonoBehaviour
 
     public void SetStartPositionAndSize()
     {
-        FindAveragePosition();
+        //FindAveragePosition();
 
-        transform.position = m_DesiredPosition;
+        transform.position = m_Targets.position;
 
         m_Camera.orthographicSize = FindRequiredSize();
     }
