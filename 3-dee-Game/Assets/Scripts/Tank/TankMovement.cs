@@ -92,8 +92,9 @@ public class TankMovement : MonoBehaviour
     private void Move()
     {
         // Adjust the position of the tank based on the player's input.
-        Vector3 movement = transform.forward * Time.deltaTime * m_MovementInputValue * m_Speed;
-        m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
+        Vector3 movement = transform.forward * Time.deltaTime * m_MovementInputValue;
+        m_Rigidbody.velocity = movement * m_Speed;
+
     }
 
 
