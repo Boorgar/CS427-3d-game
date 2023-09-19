@@ -1,0 +1,17 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/Intro.unity
+    guid: c5020d3d185efba4e960e467c526c1ac
+  - enabled: 1
+    path: Assets/Scenes/CTF_Game.unity
+    guid: f7412abe5586cb44e9a3a394667af53b
+  - enabled: 1
+    path: Assets/Scenes/TDM_Game.unity
+    guid: 31e6264386ab7524c8b05daefe87bec3
+  m_configObjects: {}
